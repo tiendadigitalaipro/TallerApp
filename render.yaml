@@ -8,4 +8,4 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        value: sqlite:///./tallerapp.db
+        sync: false  # Postgres de Supabase — se pega el valor real en el dashboard de Render, nunca en el repo
