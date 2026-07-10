@@ -285,6 +285,9 @@ class EstimateItem(Base):
     total = Column(DECIMAL(12, 2), default=0)
     part_id = Column(Integer, ForeignKey("parts.id"), nullable=True)
 
+    estimate = relationship("Estimate", back_populates="items")
+    part = relationship("Part")
+
 
 class Estimate(Base):
     __tablename__ = "estimates"
@@ -324,6 +327,8 @@ class InvoiceItem(Base):
     quantity = Column(Integer, default=1)
     unit_price = Column(DECIMAL(12, 2), default=0)
     total = Column(DECIMAL(12, 2), default=0)
+
+    invoice = relationship("Invoice", back_populates="items")
 
 
 class Invoice(Base):
