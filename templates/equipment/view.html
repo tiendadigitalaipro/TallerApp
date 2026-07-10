@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Equipo {{ equip.brand }} {{ equip.model }} - TallerApp{% endblock %}
+{% block content %}
+<div class="flex justify-between items-start mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800">{{ equip.brand or '?' }} {{ equip.model or '' }}</h1>
+        <p class="text-gray-500">{{ equip.equipment_type.value }} · {{ equip.serial_number or 'Sin serie' }}</p>
+    </div>
+    <div class="flex gap-2 items-center">
+        <form method="POST" action="/equipos/{{ equip.id }}/status" class="flex gap-2 items-center">
+            <select name="status" class="px-3 py-2 border rounded-lg text-sm">
+                {% for s in statuses %}<option value="{{ s.value }}" {% if equip.status == s %}selected{% endif %}>{{ s.value }}</option>{% endfor %}
+            </select>
+            <button type="submit" class="bg-blue-900 text-white px-3 py-2 rounded-lg text-sm">Actualizar</button>
+        </form>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-1 space-y-4">
+        <div class="bg-white rounded-lg shadow p-4">
+            <h3 class="font-semibold text-gray-700 mb-3">Detalles del Equipo</h3>
+            <div class="space-y-2 text-sm">
+                <p><span class="text-gray-500">Cliente:</span> <a href="/clientes/{{ equip.client.id }}" class="text-blue-900 hover:underline">{{ equip.client.name }}</a></p>
+                <p><span class="text-gray-500">Tipo:</span> {{ equip.equipment_type.value }}</p>
+                <p><span class="text-gray-500">Marca/Modelo:</span> {{ equip.brand or '?' }} {{ equip.model or '' }}</p>
+                <p><span class="text-gray-500">Serie:</span> {{ equip.serial_number or '-' }}</p>
+                <p><span class="text-gray-500">Año:</span> {{ equip.year or '-' }}</p>
+                <p><span class="text-gray-500">Estado:</span> <span class="px-2 py-1 text-xs rounded-full {% if equip.status.value in ('Reparado','Entregado') %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ equip.status.value }}</span></p>
+                <p><span class="text-gray-500">Ingreso:</span> {{ equip.entry_date.strftime('%d/%m/%Y') }}</p>
+                {% if equip.estimated_delivery %}<p><span class="text-gray-500">Entrega estimada:</span> {{ equip.estimated_delivery.strftime('%d/%m/%Y') }}</p>{% endif %}
+                {% if equip.delivery_date %}<p><span class="text-gray-500">Entregado:</span> {{ equip.delivery_date.strftime('%d/%m/%Y') }}</p>{% endif %}
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+            <h3 class="font-semibold text-gray-700 mb-3">🔧 Diagnóstico Inicial</h3>
+            <p class="text-sm text-gray-600">{{ equip.initial_diagnosis or 'Sin diagnóstico' }}</p>
+        </div>
+    </div>
+
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-4 py-3 border-b"><h3 class="font-semibold text-gray-700">📋 Órdenes de Trabajo</h3></div>
+            <div class="p-4">
+                {% for wo in work_orders %}
+                <div class="flex justify-between items-center py-2 border-b last:border-0">
+                    <div>
+                        <a href="/ordenes/{{ wo.id }}" class="text-blue-900 font-medium hover:underline">{{ wo.order_number }}</a>
+                        <span class="text-xs text-gray-500 ml-2">{{ wo.technician.full_name if wo.technician else 'Sin técnico' }}</span>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded-full
+                        {% if wo.status.value == 'Entregado' %}bg-green-100 text-green-800
+                        {% elif wo.status.value == 'En Reparación' %}bg-yellow-100 text-yellow-800
+                        {% elif wo.status.value == 'Diagnóstico' %}bg-blue-100 text-blue-800
+                        {% elif wo.status.value == 'Esperando Repuestos' %}bg-red-100 text-red-800
+                        {% else %}bg-gray-100{% endif %}">{{ wo.status.value }}</span>
+                </div>
+                {% else %}<p class="text-gray-500 text-sm">Sin órdenes de trabajo</p>{% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

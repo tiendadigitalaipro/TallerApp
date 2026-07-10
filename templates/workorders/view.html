@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}OT {{ order.order_number }} - TallerApp{% endblock %}
+{% block content %}
+<div class="flex justify-between items-start mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800">OT {{ order.order_number }}</h1>
+        <p class="text-gray-500">Creada: {{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+    </div>
+    <div class="flex gap-2 items-center">
+        <form method="POST" action="/ordenes/{{ order.id }}/status" class="flex gap-2 items-center">
+            <select name="status" class="px-3 py-2 border rounded-lg text-sm">
+                {% for s in statuses %}<option value="{{ s.value }}" {% if order.status == s %}selected{% endif %}>{{ s.value }}</option>{% endfor %}
+            </select>
+            <button type="submit" class="bg-blue-900 text-white px-3 py-2 rounded-lg text-sm">Actualizar</button>
+        </form>
+        <a href="/presupuestos/nuevo?equip_id={{ order.equipment_id }}" class="bg-green-700 text-white px-3 py-2 rounded-lg text-sm">+ Presupuesto</a>
+        <a href="/facturas/nuevo?order_id={{ order.id }}" class="bg-purple-700 text-white px-3 py-2 rounded-lg text-sm">+ Factura</a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-1 space-y-4">
+        <div class="bg-white rounded-lg shadow p-4">
+            <h3 class="font-semibold text-gray-700 mb-3">Información</h3>
+            <div class="space-y-2 text-sm">
+                <p><span class="text-gray-500">Cliente:</span> <a href="/clientes/{{ order.client.id }}" class="text-blue-900 hover:underline">{{ order.client.name }}</a></p>
+                <p><span class="text-gray-500">Equipo:</span> <a href="/equipos/{{ order.equipment.id }}" class="text-blue-900 hover:underline">{{ order.equipment.brand or '?' }} {{ order.equipment.model or '' }}</a></p>
+                <p><span class="text-gray-500">Técnico:</span> {{ order.technician.full_name if order.technician else 'Sin asignar' }}</p>
+                <p><span class="text-gray-500">Estado:</span> <span class="px-2 py-1 text-xs rounded-full
+                    {% if order.status.value == 'Entregado' %}bg-green-100 text-green-800
+                    {% elif order.status.value in ('En Reparación','Pruebas') %}bg-yellow-100 text-yellow-800
+                    {% elif order.status.value == 'Diagnóstico' %}bg-blue-100 text-blue-800
+                    {% elif order.status.value == 'Esperando Repuestos' %}bg-red-100 text-red-800
+                    {% elif order.status.value == 'Listo para Entregar' %}bg-purple-100 text-purple-800
+                    {% endif %}">{{ order.status.value }}</span></p>
+                <p><span class="text-gray-500">Inicio:</span> {{ order.start_date.strftime('%d/%m/%Y') if order.start_date else '-' }}</p>
+                <p><span class="text-gray-500">Entrega estimada:</span> {{ order.estimated_end_date.strftime('%d/%m/%Y') if order.estimated_end_date else '-' }}</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-4">
+            <h3 class="font-semibold text-gray-700 mb-3">🕒 Horas y Mano de Obra</h3>
+            <form method="POST" action="/ordenes/{{ order.id }}/update-labor" class="space-y-2">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs text-gray-500">Horas Trabajadas</label>
+                        <input type="number" step="0.5" name="labor_hours" value="{{ order.labor_hours }}" class="w-full px-2 py-1 border rounded text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500">Tarifa Hora</label>
+                        <input type="number" step="0.01" name="labor_rate" value="{{ order.labor_rate }}" class="w-full px-2 py-1 border rounded text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">Diagnóstico</label>
+                    <textarea name="diagnosis" rows="2" class="w-full px-2 py-1 border rounded text-sm">{{ order.diagnosis or '' }}</textarea>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">Solución / Resolución</label>
+                    <textarea name="resolution" rows="2" class="w-full px-2 py-1 border rounded text-sm">{{ order.resolution or '' }}</textarea>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">Asignar Técnico</label>
+                    <select name="technician_id" class="w-full px-2 py-1 border rounded text-sm">
+                        <option value="">Sin asignar</option>
+                        {% for t in technicians %}<option value="{{ t.id }}" {% if order.technician_id == t.id %}selected{% endif %}>{{ t.full_name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">Notas Internas</label>
+                    <textarea name="internal_notes" rows="2" class="w-full px-2 py-1 border rounded text-sm">{{ order.internal_notes or '' }}</textarea>
+                </div>
+                <button type="submit" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm w-full">Actualizar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="lg:col-span-2 space-y-4">
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-4 py-3 border-b flex justify-between items-center">
+                <h3 class="font-semibold text-gray-700">🔧 Repuestos Asignados</h3>
+                <span class="text-sm text-gray-500">Total: {{ order.parts|sum(attribute='total')|default(0) }}</span>
+            </div>
+            <div class="p-4">
+                <form method="POST" action="/ordenes/{{ order.id }}/add-part" class="flex gap-2 mb-4">
+                    <select name="part_id" class="flex-1 px-3 py-2 border rounded-lg text-sm">
+                        {% for p in parts %}<option value="{{ p.id }}">{{ p.name }} (Stock: {{ p.stock }})</option>{% endfor %}
+                    </select>
+                    <input type="number" name="quantity" value="1" min="1" class="w-20 px-3 py-2 border rounded-lg text-sm">
+                    <button type="submit" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm">Agregar</button>
+                </form>
+                {% for wp in order.parts %}
+                <div class="flex justify-between items-center py-2 border-b last:border-0 text-sm">
+                    <span>{{ wp.part.name if wp.part else '?' }} x{{ wp.quantity }}</span>
+                    <span class="text-gray-500">Bs {{ wp.unit_price }}</span>
+                </div>
+                {% else %}<p class="text-sm text-gray-500">Sin repuestos asignados</p>{% endfor %}
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-4 py-3 border-b">
+                <h3 class="font-semibold text-gray-700">📊 Resumen de Costos</h3>
+            </div>
+            <div class="p-4 text-sm space-y-1">
+                <p>Repuestos: Bs {{ order.parts|sum(attribute='total') }}</p>
+                <p>Mano de obra: Bs {{ order.labor_hours * order.labor_rate }}</p>
+                <hr>
+                <p class="font-bold">Total: Bs {{ order.parts|sum(attribute='total') + order.labor_hours * order.labor_rate }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

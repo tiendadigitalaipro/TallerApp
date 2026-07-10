@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — TallerApp{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% set active_page = 'dashboard' %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Metric Cards (3x2 grid, 1 col mobile) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+        <!-- Ordenes Activas -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-start gap-4">
+            <div class="shrink-0 w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm text-gray-500 font-medium truncate">Órdenes Activas</p>
+                <p class="text-2xl font-bold text-[#1f2937] mt-0.5">{{ active_orders | default(0) }}</p>
+            </div>
+        </div>
+
+        <!-- Completadas Hoy -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-start gap-4">
+            <div class="shrink-0 w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center text-green-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm text-gray-500 font-medium truncate">Completadas Hoy</p>
+                <p class="text-2xl font-bold text-[#1f2937] mt-0.5">{{ completed_today | default(0) }}</p>
+            </div>
+        </div>
+
+        <!-- Ingresos Hoy -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-start gap-4">
+            <div class="shrink-0 w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm text-gray-500 font-medium truncate">Ingresos Hoy</p>
+                <p class="text-2xl font-bold text-[#1f2937] mt-0.5">${{ "{:,.0f}".format(income_today) if income_today is defined else '0' }}</p>
+            </div>
+        </div>
+
+        <!-- Ingresos Mes -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-start gap-4">
+            <div class="shrink-0 w-12 h-12 rounded-lg bg-[#f59e0b]/20 flex items-center justify-center text-[#f59e0b]">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm text-gray-500 font-medium truncate">Ingresos del Mes</p>
+                <p class="text-2xl font-bold text-[#1f2937] mt-0.5">${{ "{:,.0f}".format(income_month) if income_month is defined else '0' }}</p>
+            </div>
+        </div>
+
+        <!-- Stock Bajo -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-start gap-4">
+            <div class="shrink-0 w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm text-gray-500 font-medium truncate">Stock Bajo</p>
+                <p class="text-2xl font-bold text-[#1f2937] mt-0.5">{{ low_stock | default(0) }}</p>
+            </div>
+        </div>
+
+        <!-- En Garantia -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-start gap-4">
+            <div class="shrink-0 w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm text-gray-500 font-medium truncate">En Garantía</p>
+                <p class="text-2xl font-bold text-[#1f2937] mt-0.5">{{ warranty_count | default(0) }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts & Recent Orders row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+        <!-- Monthly Income Chart (Chart.js) — spans 2 cols on desktop -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-semibold text-[#1f2937]">Ingresos Mensuales</h3>
+                <span class="text-xs text-gray-400">últimos 12 meses</span>
+            </div>
+            <div class="relative" style="height: 260px;">
+                <canvas id="monthlyIncomeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Quick Stats Mini Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <h3 class="text-base font-semibold text-[#1f2937] mb-4">Resumen</h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-500">Total Clientes</span>
+                    <span class="text-lg font-bold text-[#1f2937]">{{ total_clients | default(0) }}</span>
+                </div>
+                <div class="border-t border-gray-100"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-500">Total Equipos</span>
+                    <span class="text-lg font-bold text-[#1f2937]">{{ total_equipment | default(0) }}</span>
+                </div>
+                <div class="border-t border-gray-100"></div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-500">Órdenes Activas</span>
+                    <span class="text-lg font-bold text-[#1e3a5f]">{{ active_orders | default(0) }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 class="text-base font-semibold text-[#1f2937]">Órdenes de Trabajo Recientes</h3>
+            <a href="/ordenes-trabajo" class="text-sm text-[#1e3a5f] hover:text-[#f59e0b] font-medium transition-colors">
+                Ver todas &rarr;
+            </a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th class="px-5 py-3">N° Orden</th>
+                        <th class="px-5 py-3">Cliente</th>
+                        <th class="px-5 py-3">Equipo</th>
+                        <th class="px-5 py-3">Estado</th>
+                        <th class="px-5 py-3">Técnico</th>
+                        <th class="px-5 py-3">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% if recent_orders is defined and recent_orders %}
+                        {% for order in recent_orders[:5] %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-5 py-3 font-medium text-[#1f2937]">{{ order.order_number }}</td>
+                            <td class="px-5 py-3 text-gray-600">{{ order.client.name if order.client is defined and order.client else '—' }}</td>
+                            <td class="px-5 py-3 text-gray-600">{{ order.equipment.equipment_type if order.equipment is defined and order.equipment else '—' }}</td>
+                            <td class="px-5 py-3">
+                                {% set status_colors = {
+                                    'pendiente': 'bg-yellow-100 text-yellow-800',
+                                    'en_progreso': 'bg-blue-100 text-blue-800',
+                                    'completada': 'bg-green-100 text-green-800',
+                                    'cancelada': 'bg-red-100 text-red-800',
+                                    'facturada': 'bg-purple-100 text-purple-800',
+                                } %}
+                                {% set status_label = order.status | replace('_', ' ') | title if order.status is defined else '—' %}
+                                {% set color_class = status_colors.get(order.status, 'bg-gray-100 text-gray-800') if order.status is defined else 'bg-gray-100 text-gray-800' %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ color_class }}">
+                                    {{ status_label }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-3 text-gray-600">{{ order.technician.full_name if order.technician is defined and order.technician else '—' }}</td>
+                            <td class="px-5 py-3 text-gray-500">{{ order.created_at.strftime('%d/%m/%Y') if order.created_at is defined and order.created_at else '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="px-5 py-8 text-center text-gray-400">
+                                No hay órdenes de trabajo recientes.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const canvas = document.getElementById('monthlyIncomeChart');
+        if (!canvas) return;
+
+        const monthlyIncome = {{ monthly_income | tojson | safe if monthly_income is defined else '[]' }};
+
+        if (!monthlyIncome || monthlyIncome.length === 0) {
+            canvas.parentElement.innerHTML = '<div class="flex items-center justify-center h-full text-gray-400 text-sm">No hay datos de ingresos mensuales disponibles.</div>';
+            return;
+        }
+
+        const labels = monthlyIncome.map(item => item.month || '');
+        const values = monthlyIncome.map(item => parseFloat(item.total) || 0);
+
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Ingresos ($)',
+                    data: values,
+                    backgroundColor: 'rgba(30, 58, 95, 0.75)',
+                    borderColor: '#1e3a5f',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    barPercentage: 0.6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                    tooltip: {
+                        backgroundColor: '#1e3a5f',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        callbacks: {
+                            label: function(context) {
+                                return '$ ' + context.parsed.y.toLocaleString('es-AR');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)',
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString('es-AR');
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false,
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

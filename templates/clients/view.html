@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}{{ client.name }} - TallerApp{% endblock %}
+{% block content %}
+<div class="flex justify-between items-start mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800">{{ client.name }}</h1>
+        <p class="text-gray-500">Cliente desde {{ client.created_at.strftime('%d/%m/%Y') }}</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="/clientes/{{ client.id }}/editar" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">Editar</a>
+        <a href="/equipos/nuevo?client_id={{ client.id }}" class="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-800">+ Equipo</a>
+        <a href="/presupuestos/nuevo?client_id={{ client.id }}" class="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800">+ Presupuesto</a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-1 space-y-4">
+        <div class="bg-white rounded-lg shadow p-4">
+            <h3 class="font-semibold text-gray-700 mb-3">Información de Contacto</h3>
+            <div class="space-y-2 text-sm">
+                <p><span class="text-gray-500">📞 Teléfono:</span> <a href="tel:{{ client.phone }}" class="text-blue-900">{{ client.phone or '-' }}</a></p>
+                <p><span class="text-gray-500">✉️ Email:</span> <a href="mailto:{{ client.email }}" class="text-blue-900">{{ client.email or '-' }}</a></p>
+                <p><span class="text-gray-500">📍 Dirección:</span> {{ client.address or '-' }}</p>
+                <p><span class="text-gray-500">💬 Preferencia:</span>
+                    <span class="px-2 py-1 text-xs rounded-full {% if client.contact_preference == 'WhatsApp' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                        {{ client.contact_preference }}
+                    </span>
+                </p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-4">
+            <h3 class="font-semibold text-gray-700 mb-3">📋 Notas</h3>
+            <p class="text-sm text-gray-600">{{ client.notes or 'Sin notas' }}</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-4">
+            <h3 class="font-semibold text-gray-700 mb-3">➕ Nueva Interacción</h3>
+            <form method="POST" action="/clientes/{{ client.id }}/interaccion" class="space-y-2">
+                <select name="interaction_type" class="w-full px-3 py-2 border rounded-lg text-sm">
+                    <option value="Nota">Nota</option>
+                    <option value="Llamada">Llamada</option>
+                    <option value="Mensaje">Mensaje</option>
+                    <option value="Visita">Visita</option>
+                    <option value="Correo">Correo</option>
+                </select>
+                <textarea name="notes" rows="2" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Detalle..."></textarea>
+                <button type="submit" class="bg-blue-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-800">Registrar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="lg:col-span-2 space-y-4">
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-4 py-3 border-b">
+                <h3 class="font-semibold text-gray-700">🛠️ Equipos ({{ client.equipment|length }})</h3>
+            </div>
+            <div class="p-4">
+                {% for eq in client.equipment %}
+                <div class="flex justify-between items-center py-2 border-b last:border-0">
+                    <div>
+                        <a href="/equipos/{{ eq.id }}" class="text-blue-900 font-medium hover:underline">{{ eq.brand or '?' }} {{ eq.model or '' }}</a>
+                        <span class="text-xs text-gray-500 ml-2">{{ eq.equipment_type.value }}</span>
+                    </div>
+                    <span class="px-2 py-1 text-xs rounded-full
+                        {% if eq.status.value == 'Reparado' or eq.status.value == 'Entregado' %}bg-green-100 text-green-800
+                        {% elif eq.status.value == 'En Reparación' %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ eq.status.value }}
+                    </span>
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-sm">Sin equipos registrados</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-4 py-3 border-b">
+                <h3 class="font-semibold text-gray-700">📄 Órdenes de Trabajo ({{ client.work_orders|length }})</h3>
+            </div>
+            <div class="p-4">
+                {% for wo in client.work_orders[:10] %}
+                <div class="flex justify-between items-center py-2 border-b last:border-0">
+                    <div>
+                        <a href="/ordenes/{{ wo.id }}" class="text-blue-900 font-medium hover:underline">{{ wo.order_number }}</a>
+                        <span class="text-xs text-gray-500 ml-2">{{ wo.equipment.equipment_type.value if wo.equipment else '' }}</span>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded-full
+                        {% if wo.status.value == 'Entregado' %}bg-green-100 text-green-800
+                        {% elif wo.status.value == 'En Reparación' %}bg-yellow-100 text-yellow-800
+                        {% elif wo.status.value == 'Diagnóstico' %}bg-blue-100 text-blue-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ wo.status.value }}
+                    </span>
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-sm">Sin órdenes de trabajo</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-4 py-3 border-b flex justify-between items-center">
+                <h3 class="font-semibold text-gray-700">💬 Historial de Interacciones</h3>
+            </div>
+            <div class="divide-y">
+                {% for act in client.interactions[:10] %}
+                <div class="p-3">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-medium px-2 py-1 rounded bg-gray-100">{{ act.interaction_type }}</span>
+                        <span class="text-xs text-gray-400">{{ act.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">{{ act.notes or '-' }}</p>
+                </div>
+                {% else %}
+                <div class="p-3 text-sm text-gray-500">Sin interacciones registradas</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

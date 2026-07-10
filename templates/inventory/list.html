@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Inventario - TallerApp{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Inventario de Repuestos</h1>
+    <div class="flex gap-2">
+        <a href="/inventario?low_stock=true" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 {% if low_stock %}ring-2 ring-orange-300{% endif %}">Stock Bajo</a>
+        <a href="/inventario/nuevo" class="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-800">+ Nuevo Repuesto</a>
+        <a href="/inventario/proveedores" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Proveedores</a>
+    </div>
+</div>
+<form class="mb-6" method="GET">
+    <div class="flex gap-2">
+        <input type="text" name="search" value="{{ search }}" placeholder="Buscar por código, nombre o descripción..." class="flex-1 px-4 py-2 border rounded-lg">
+        <button type="submit" class="bg-gray-600 text-white px-6 py-2 rounded-lg">Buscar</button>
+    </div>
+</form>
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-gray-50">
+            <tr><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-left">Código</th><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-left">Nombre</th><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-left">Categoría</th><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">Stock</th><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">Stock Mín</th><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">Costo</th><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">Precio Venta</th><th class="px-4 py-3"></th></tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+            {% for p in parts %}
+            <tr class="hover:bg-gray-50 {% if p.stock <= p.min_stock %}bg-red-50{% endif %}">
+                <td class="px-4 py-3 text-sm font-mono">{{ p.code }}</td>
+                <td class="px-4 py-3"><a href="/inventario/{{ p.id }}" class="text-blue-900 font-medium hover:underline">{{ p.name }}</a></td>
+                <td class="px-4 py-3 text-sm">{{ p.category.value }}</td>
+                <td class="px-4 py-3 text-sm text-right font-semibold {% if p.stock <= p.min_stock %}text-red-600{% endif %}">{{ p.stock }}</td>
+                <td class="px-4 py-3 text-sm text-right">{{ p.min_stock }}</td>
+                <td class="px-4 py-3 text-sm text-right">Bs {{ p.cost_price }}</td>
+                <td class="px-4 py-3 text-sm text-right">Bs {{ p.sale_price }}</td>
+                <td class="px-4 py-3"><a href="/inventario/{{ p.id }}" class="text-blue-600 text-sm hover:underline">Ver</a></td>
+            </tr>
+            {% else %}<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">No hay repuestos registrados</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

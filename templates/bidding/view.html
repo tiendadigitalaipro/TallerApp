@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ bid.title }} - TallerApp{% endblock %}
+{% block content %}
+<div class="flex justify-between items-start mb-6">
+    <div><h1 class="text-2xl font-bold text-gray-800">{{ bid.title }}</h1><p class="text-gray-500">{{ bid.institution or '' }}</p></div>
+    <form method="POST" action="/licitaciones/{{ bid.id }}/status" class="flex gap-2 items-center">
+        <select name="status" class="px-3 py-2 border rounded-lg text-sm">
+            {% for s in [{'value':'En Proceso'},{'value':'Ganada'},{'value':'Perdida'},{'value':'Cancelada'}] %}
+            <option value="{{ s.value }}" {% if bid.status.value == s.value %}selected{% endif %}>{{ s.value }}</option>{% endfor %}
+        </select>
+        <input type="number" step="0.01" name="proposed_value" placeholder="Valor" value="{{ bid.proposed_value or '' }}" class="w-32 px-3 py-2 border rounded-lg text-sm">
+        <button type="submit" class="bg-blue-900 text-white px-3 py-2 rounded-lg text-sm">Actualizar</button>
+    </form>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-lg shadow p-4 space-y-2 text-sm">
+        <h3 class="font-semibold text-gray-700 mb-2">📋 Detalles</h3>
+        <p><span class="text-gray-500">Referencia:</span> {{ bid.reference or '-' }}</p>
+        <p><span class="text-gray-500">Estado:</span> <span class="px-2 py-1 text-xs rounded-full {% if bid.status.value == 'Ganada' %}bg-green-100 text-green-800{% elif bid.status.value == 'Perdida' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">{{ bid.status.value }}</span></p>
+        <p><span class="text-gray-500">Valor Estimado:</span> Bs {{ bid.estimated_value or '-' }}</p>
+        <p><span class="text-gray-500">Valor Propuesto:</span> Bs {{ bid.proposed_value or '-' }}</p>
+        <p><span class="text-gray-500">Cierre:</span> {{ bid.deadline.strftime('%d/%m/%Y') if bid.deadline else '-' }}</p>
+        <p><span class="text-gray-500">Presentación:</span> {{ bid.submission_date.strftime('%d/%m/%Y') if bid.submission_date else '-' }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="font-semibold text-gray-700 mb-2">📄 Descripción</h3>
+        <p class="text-sm text-gray-600">{{ bid.description or 'Sin descripción' }}</p>
+        {% if bid.notes %}<hr class="my-2"><p class="text-sm text-gray-600">{{ bid.notes }}</p>{% endif %}
+    </div>
+</div>
+{% endblock %}

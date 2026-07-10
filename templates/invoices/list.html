@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Facturas - TallerApp{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Facturación</h1>
+    <a href="/facturas/nuevo" class="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-800">+ Nueva Factura</a>
+</div>
+<form class="mb-6 flex gap-2" method="GET">
+    <input type="text" name="search" placeholder="Buscar..." class="flex-1 px-4 py-2 border rounded-lg">
+    <select name="status" class="px-4 py-2 border rounded-lg">
+        <option value="">Todos</option>{% for s in statuses %}<option value="{{ s.value }}" {% if status == s.value %}selected{% endif %}>{{ s.value }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="bg-gray-600 text-white px-6 py-2 rounded-lg">Filtrar</button>
+</form>
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-gray-50"><tr><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-left">N° Factura</th><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-left">Cliente</th><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">Total</th><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-right">Pagado</th><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-center">Estado</th><th class="px-4 py-3 text-xs font-medium text-gray-500 uppercase text-left">Fecha</th><th class="px-4 py-3"></th></tr></thead>
+        <tbody class="divide-y divide-gray-200">
+            {% for inv in invoices %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3"><a href="/facturas/{{ inv.id }}" class="font-medium text-blue-900 hover:underline">{{ inv.invoice_number }}</a></td>
+                <td class="px-4 py-3 text-sm">{{ inv.client.name }}</td>
+                <td class="px-4 py-3 text-sm text-right font-semibold">Bs {{ inv.total }}</td>
+                <td class="px-4 py-3 text-sm text-right">Bs {{ inv.amount_paid }}</td>
+                <td class="px-4 py-3 text-center"><span class="px-2 py-1 text-xs rounded-full
+                    {% if inv.status.value == 'Pagado' %}bg-green-100 text-green-800
+                    {% elif inv.status.value == 'Vencido' %}bg-red-100 text-red-800
+                    {% elif inv.status.value == 'Pago Parcial' %}bg-yellow-100 text-yellow-800
+                    {% else %}bg-blue-100 text-blue-800{% endif %}">{{ inv.status.value }}</span></td>
+                <td class="px-4 py-3 text-xs text-gray-500">{{ inv.created_at.strftime('%d/%m/%Y') }}</td>
+                <td class="px-4 py-3"><a href="/facturas/{{ inv.id }}" class="text-blue-600 text-sm hover:underline">Ver</a></td>
+            </tr>
+            {% else %}<tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">No hay facturas</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

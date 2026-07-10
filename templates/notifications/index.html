@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Notificaciones - TallerApp{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-800 mb-6">🔔 Centro de Notificaciones</h1>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-yellow-500">
+        <h3 class="font-semibold text-gray-700">⚠️ Garantías por Vencer</h3>
+        <p class="text-2xl font-bold text-yellow-600 mt-2">{{ warranty_expiring|length }}</p>
+        <p class="text-sm text-gray-500">Equipos con garantía próxima a vencer (30 días)</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-red-500">
+        <h3 class="font-semibold text-gray-700">🔴 Facturas Vencidas</h3>
+        <p class="text-2xl font-bold text-red-600 mt-2">{{ overdue_invoices }}</p>
+        <p class="text-sm text-gray-500">Facturas pendientes con fecha vencida</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-orange-500">
+        <h3 class="font-semibold text-gray-700">📦 Stock Bajo</h3>
+        <p class="text-2xl font-bold text-orange-600 mt-2">{{ low_stock_parts }}</p>
+        <p class="text-sm text-gray-500">Repuestos por debajo del stock mínimo</p>
+    </div>
+</div>
+
+{% if warranty_expiring %}
+<div class="bg-white rounded-lg shadow">
+    <div class="px-4 py-3 border-b"><h3 class="font-semibold text-gray-700">📅 Equipos con Garantía Próxima a Vencer</h3></div>
+    <div class="divide-y">
+        {% for eq in warranty_expiring %}
+        <div class="p-3 flex justify-between items-center text-sm">
+            <div><a href="/equipos/{{ eq.id }}" class="text-blue-900 hover:underline">{{ eq.brand or '?' }} {{ eq.model or '' }}</a> · <span class="text-gray-500">{{ eq.client.name }}</span></div>
+            <span class="text-red-600 font-medium">Vence: {{ eq.warranty_until.strftime('%d/%m/%Y') }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

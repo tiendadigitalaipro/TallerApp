@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Nuevo Presupuesto - TallerApp{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Nuevo Presupuesto</h1>
+    <form method="POST" id="estimate-form" class="bg-white rounded-lg shadow p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                <select name="client_id" required class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Seleccionar...</option>{% for c in clients %}<option value="{{ c.id }}" {% if selected_client_id == c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Equipo</label>
+                <select name="equipment_id" class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Sin equipo</option>{% for eq in equipment %}<option value="{{ eq.id }}">{{ eq.brand or '?' }} {{ eq.model or '' }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">IVA (%)</label>
+                <input type="number" step="0.1" name="tax_rate" value="{{ tax_rate }}" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Válido hasta</label>
+                <input type="date" name="valid_until" value="{{ today }}" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+        </div>
+
+        <div>
+            <h3 class="font-semibold text-gray-700 mb-2">📋 Partidas</h3>
+            <div id="items-container">
+                <div class="item-row grid grid-cols-12 gap-2 mb-2">
+                    <div class="col-span-6"><input type="text" name="items[0][description]" placeholder="Descripción" class="w-full px-3 py-2 border rounded-lg text-sm" required></div>
+                    <div class="col-span-1"><input type="number" name="items[0][quantity]" value="1" min="1" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+                    <div class="col-span-2"><input type="number" step="0.01" name="items[0][unit_price]" placeholder="Precio" class="w-full px-3 py-2 border rounded-lg text-sm item-price"></div>
+                    <div class="col-span-2"><input type="text" class="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50 item-total" readonly></div>
+                    <div class="col-span-1"><button type="button" class="remove-item w-full px-3 py-2 bg-red-100 text-red-700 rounded-lg text-sm" onclick="this.closest('.item-row').remove(); recalc();">✕</button></div>
+                </div>
+            </div>
+            <button type="button" onclick="addItem()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-300">+ Agregar Partida</button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Descuento</label>
+                <div class="flex gap-2">
+                    <input type="number" step="0.01" name="discount" value="0" class="w-24 px-3 py-2 border rounded-lg text-sm" id="discount">
+                    <select name="discount_type" class="px-3 py-2 border rounded-lg text-sm" id="discount-type">
+                        <option value="percent">%</option>
+                        <option value="fixed">Bs</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t pt-4 space-y-1 text-right">
+            <p class="text-sm">Subtotal: Bs <span id="subtotal">0.00</span></p>
+            <p class="text-sm">IVA: Bs <span id="tax-display">0.00</span></p>
+            <p class="text-lg font-bold">Total: Bs <span id="total">0.00</span></p>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+            <textarea name="notes" rows="2" class="w-full px-3 py-2 border rounded-lg"></textarea>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Términos y Condiciones</label>
+            <textarea name="terms" rows="2" class="w-full px-3 py-2 border rounded-lg">Pago: 50% anticipo, 50% contra entrega. Garantía: 3 meses en mano de obra.</textarea>
+        </div>
+
+        <div class="flex gap-3 pt-4">
+            <button type="submit" class="bg-blue-900 text-white px-6 py-2 rounded-lg hover:bg-blue-800">Crear Presupuesto</button>
+            <a href="/presupuestos" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+<script>
+let itemIndex = 1;
+function addItem() {
+    const html = `<div class="item-row grid grid-cols-12 gap-2 mb-2">
+        <div class="col-span-6"><input type="text" name="items[${itemIndex}][description]" placeholder="Descripción" class="w-full px-3 py-2 border rounded-lg text-sm" required></div>
+        <div class="col-span-1"><input type="number" name="items[${itemIndex}][quantity]" value="1" min="1" class="w-full px-3 py-2 border rounded-lg text-sm"></div>
+        <div class="col-span-2"><input type="number" step="0.01" name="items[${itemIndex}][unit_price]" placeholder="Precio" class="w-full px-3 py-2 border rounded-lg text-sm item-price"></div>
+        <div class="col-span-2"><input type="text" class="w-full px-3 py-2 border rounded-lg text-sm bg-gray-50 item-total" readonly></div>
+        <div class="col-span-1"><button type="button" class="remove-item w-full px-3 py-2 bg-red-100 text-red-700 rounded-lg text-sm" onclick="this.closest('.item-row').remove(); recalc();">✕</button></div>
+    </div>`;
+    document.getElementById('items-container').insertAdjacentHTML('beforeend', html);
+    itemIndex++;
+}
+function recalc() {
+    let subtotal = 0;
+    document.querySelectorAll('.item-row').forEach(row => {
+        const qty = parseFloat(row.querySelector('input[name*="[quantity]"]').value) || 0;
+        const price = parseFloat(row.querySelector('.item-price').value) || 0;
+        const total = qty * price;
+        row.querySelector('.item-total').value = total.toFixed(2);
+        subtotal += total;
+    });
+    const taxRate = parseFloat(document.querySelector('input[name="tax_rate"]').value) || 0;
+    const discount = parseFloat(document.getElementById('discount').value) || 0;
+    const discType = document.getElementById('discount-type').value;
+    const discAmt = discType === 'percent' ? subtotal * discount / 100 : discount;
+    const taxable = Math.max(0, subtotal - discAmt);
+    const tax = taxable * taxRate / 100;
+    const total = taxable + tax;
+    document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+    document.getElementById('tax-display').textContent = tax.toFixed(2);
+    document.getElementById('total').textContent = total.toFixed(2);
+}
+document.addEventListener('input', recalc);
+document.querySelector('select[name="equipment_id"]')?.addEventListener('change', function() {
+    if (this.value && !document.querySelector('input[name^="items"]')) {
+        document.querySelector('.item-row input[name$="[description]"]').value = 'Servicio de reparación';
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if equip else 'Nuevo' }} Equipo - TallerApp{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">{{ 'Editar' if equip else 'Nuevo' }} Equipo</h1>
+    <form method="POST" class="bg-white rounded-lg shadow p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Cliente *</label>
+                <select name="client_id" required class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">Seleccionar cliente...</option>
+                    {% for c in clients %}<option value="{{ c.id }}" {% if (selected_client_id and c.id == selected_client_id) or (equip and equip.client_id == c.id) %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Equipo *</label>
+                <select name="equipment_type" required class="w-full px-3 py-2 border rounded-lg">
+                    {% for t in equipment_types %}<option value="{{ t.value }}" {% if equip and equip.equipment_type == t %}selected{% endif %}>{{ t.value }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+                <input type="text" name="brand" value="{{ equip.brand if equip else '' }}" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Modelo</label>
+                <input type="text" name="model" value="{{ equip.model if equip else '' }}" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Número de Serie</label>
+                <input type="text" name="serial_number" value="{{ equip.serial_number if equip else '' }}" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Año</label>
+                <input type="number" name="year" value="{{ equip.year if equip else '' }}" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Diagnóstico Inicial</label>
+            <textarea name="initial_diagnosis" rows="3" class="w-full px-3 py-2 border rounded-lg">{{ equip.initial_diagnosis if equip else '' }}</textarea>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Estimada de Entrega</label>
+            <input type="date" name="estimated_delivery" value="{{ equip.estimated_delivery.isoformat() if equip and equip.estimated_delivery else '' }}" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Notas Internas</label>
+            <textarea name="notes" rows="2" class="w-full px-3 py-2 border rounded-lg">{{ equip.notes if equip else '' }}</textarea>
+        </div>
+        <div class="flex gap-3 pt-4">
+            <button type="submit" class="bg-blue-900 text-white px-6 py-2 rounded-lg hover:bg-blue-800">Guardar</button>
+            <a href="/equipos" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

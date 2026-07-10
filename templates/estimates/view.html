@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Presupuesto {{ estimate.estimate_number }} - TallerApp{% endblock %}
+{% block content %}
+<div class="flex justify-between items-start mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800">Presupuesto {{ estimate.estimate_number }}</h1>
+        <p class="text-gray-500">{{ estimate.client.name }} · {{ estimate.created_at.strftime('%d/%m/%Y') }}</p>
+    </div>
+    <div class="flex gap-2">
+        <form method="POST" action="/presupuestos/{{ estimate.id }}/status" class="flex gap-2 items-center">
+            <select name="status" class="px-3 py-2 border rounded-lg text-sm">
+                {% for s in [{'value':'Borrador'},{'value':'Enviado'},{'value':'Aprobado'},{'value':'Rechazado'}] %}
+                <option value="{{ s.value }}" {% if estimate.status.value == s.value %}selected{% endif %}>{{ s.value }}</option>{% endfor %}
+            </select>
+            <button type="submit" class="bg-blue-900 text-white px-3 py-2 rounded-lg text-sm">Actualizar</button>
+        </form>
+        {% if estimate.status.value == 'Aprobado' %}
+        <form method="POST" action="/presupuestos/{{ estimate.id }}/convertir">
+            <button type="submit" class="bg-green-700 text-white px-4 py-2 rounded-lg text-sm">Convertir a OT</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6 max-w-3xl mx-auto">
+    <div class="border-b pb-4 mb-4">
+        <div class="flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800">{{ estimate.client.name }}</h2>
+            <p class="text-sm text-gray-500">{{ estimate.estimate_number }}</p>
+        </div>
+        {% if estimate.equipment %}<p class="text-sm text-gray-500 mt-1">Equipo: {{ estimate.equipment.brand or '?' }} {{ estimate.equipment.model or '' }}</p>{% endif %}
+    </div>
+
+    <table class="w-full mb-4">
+        <thead><tr class="bg-gray-50"><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th><th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Cant</th><th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Precio</th><th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th></tr></thead>
+        <tbody class="divide-y divide-gray-200">
+            {% for item in estimate.items %}
+            <tr><td class="px-4 py-2 text-sm">{{ item.description }}</td><td class="px-4 py-2 text-sm text-right">{{ item.quantity }}</td><td class="px-4 py-2 text-sm text-right">Bs {{ item.unit_price }}</td><td class="px-4 py-2 text-sm text-right font-medium">Bs {{ item.total }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="border-t pt-4 space-y-1 text-right">
+        <p class="text-sm">Subtotal: Bs {{ estimate.subtotal }}</p>
+        {% if estimate.discount %}<p class="text-sm text-green-600">Descuento ({{ estimate.discount }}{% if estimate.discount_type == 'percent' %}%{% endif %}): -Bs {{ estimate.subtotal * estimate.discount / 100 if estimate.discount_type == 'percent' else estimate.discount }}</p>{% endif %}
+        <p class="text-sm">IVA ({{ estimate.tax_rate }}%): Bs {{ estimate.tax_amount }}</p>
+        <p class="text-lg font-bold">Total: Bs {{ estimate.total }}</p>
+    </div>
+
+    {% if estimate.notes %}<div class="mt-4 p-3 bg-gray-50 rounded text-sm"><strong>Notas:</strong> {{ estimate.notes }}</div>{% endif %}
+    {% if estimate.terms %}<div class="mt-2 p-3 bg-gray-50 rounded text-sm"><strong>Términos:</strong> {{ estimate.terms }}</div>{% endif %}
+</div>
+{% endblock %}
