@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from database import get_db
-from models import Equipment, WorkOrder, WorkOrderStatus, Part, User, Invoice, InvoiceStatus, Client
+from models import Equipment, WorkOrder, WorkOrderStatus, Part, WorkOrderPart, User, Invoice, InvoiceStatus, Client
 from main import get_current_user, templates
 
 router = APIRouter()
@@ -16,7 +16,12 @@ def reports_page(request: Request, db: Session = Depends(get_db), user=Depends(g
     ).join(WorkOrder, WorkOrder.equipment_id == Equipment.id
     ).group_by(Equipment.equipment_type).all()
 
-    top_parts = db.query(Part.name, func.coalesce(func.sum(1), 0).label('usage_count')).all()
+    top_parts = db.query(
+        Part.name, func.coalesce(func.sum(WorkOrderPart.quantity), 0).label('usage_count')
+    ).outerjoin(WorkOrderPart, WorkOrderPart.part_id == Part.id
+    ).group_by(Part.id, Part.name
+    ).order_by(func.coalesce(func.sum(WorkOrderPart.quantity), 0).desc()
+    ).limit(10).all()
 
     tech_perf = db.query(
         User.full_name,
